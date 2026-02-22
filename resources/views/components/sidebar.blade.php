@@ -42,35 +42,6 @@
                     </ul>
                 </li>
                 <li class=" ">
-                    <a href="#mydrive" class="collapsed" data-toggle="collapse" aria-expanded="false">
-                        <i class="las la-hdd"></i><span>My Drive</span>
-                        <i class="las la-angle-right iq-arrow-right arrow-active"></i>
-                        <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
-                    </a>
-                    <ul id="mydrive" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
-                        <li class=" ">
-                            <a href="page-alexa.html">
-                                <i class="lab la-blogger-b"></i><span>Alexa Workshop</span>
-                            </a>
-                        </li>
-                        <li class=" ">
-                            <a href="page-android.html">
-                                <i class="las la-share-alt"></i><span>Android</span>
-                            </a>
-                        </li>
-                        <li class=" ">
-                            <a href="page-brightspot.html">
-                                <i class="las la-icons"></i><span>Brightspot</span>
-                            </a>
-                        </li>
-                        <li class=" ">
-                            <a href="page-ionic.html">
-                                <i class="las la-icons"></i><span>Ionic Chat App</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li class=" ">
                     <a href="page-files.html" class="">
                         <i class="lar la-file-alt iq-arrow-left"></i><span>Files</span>
                     </a>
