@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\GeneralController;
 use App\Http\Controllers\UserAuthController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/files/{id}/restore', [\App\Http\Controllers\FileController::class, 'restore'])->name('files.restore');
     Route::delete('/files/{id}/force-delete', [\App\Http\Controllers\FileController::class, 'forceDelete'])->name('files.force-delete');
     Route::get('/files/trash/list', [\App\Http\Controllers\FileController::class, 'trashed'])->name('files.trashed');
+    Route::put('/files/{id}/rename', [\App\Http\Controllers\FileController::class, 'rename'])->name('files.rename');
 
     // Folder routes
     Route::get('/folders', [\App\Http\Controllers\FolderController::class, 'index'])->name('folders.index');
@@ -66,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/folders/{id}', [\App\Http\Controllers\FolderController::class, 'destroy'])->name('folders.destroy');
     Route::post('/folders/{id}/restore', [\App\Http\Controllers\FolderController::class, 'restore'])->name('folders.restore');
     Route::delete('/folders/{id}/force-delete', [\App\Http\Controllers\FolderController::class, 'forceDelete'])->name('folders.force-delete');
+    Route::put('/folders/{id}/rename', [\App\Http\Controllers\FolderController::class, 'rename'])->name('folders.rename');
 
     // Trash route
     Route::get('/trash', [\App\Http\Controllers\TrashController::class, 'index'])->name('trash.index');
@@ -76,6 +79,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/shares', [\App\Http\Controllers\ShareController::class, 'index'])->name('shares.index');
 
     Route::get('/recent', [\App\Http\Controllers\RecentViewController::class, 'index'])->name('recent.index');
+    // Search routes
+    Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+    Route::get('/search/suggest', [SearchController::class, 'suggest'])->name('search.suggest');
     Route::delete('/shares/{id}', [\App\Http\Controllers\ShareController::class, 'destroy'])->name('shares.destroy');
 
     // Admin-only routes

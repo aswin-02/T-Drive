@@ -285,6 +285,67 @@ class FileController extends Controller
     }
 
     /**
+     * Rename a file
+     */
+    public function rename(Request $request, $id)
+    {
+        try {
+            $file = File::findOrFail($id);
+
+            // Check if user owns the file or is admin
+            if ($file->user_id !== Auth::id() && Auth::user()->user_type !== 'admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access',
+                ], 403);
+            }
+
+            $request->validate([
+                'name' => 'required|string|max:255',
+            ]);
+
+            $newName = trim($request->name);
+
+            // Check for duplicate name in the same folder (excluding this file)
+            $duplicate = File::where('user_id', Auth::id())
+                ->where('folder_id', $file->folder_id)
+                ->where('original_name', $newName)
+                ->where('id', '!=', $file->id)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if ($duplicate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'A file with this name already exists in this location.',
+                ], 422);
+            }
+
+            $file->original_name = $newName;
+            $file->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File renamed successfully.',
+                'new_name' => $newName,
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('File rename failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to rename file: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Get all trashed files for the authenticated user
      */
     public function trashed()

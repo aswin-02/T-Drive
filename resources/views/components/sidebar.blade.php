@@ -42,23 +42,9 @@
                     </ul>
                 </li>
                 <li class=" ">
-                    <a href="page-files.html" class="">
-                        <i class="lar la-file-alt iq-arrow-left"></i><span>Files</span>
-                    </a>
-                    <ul id="page-files" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
-                    </ul>
-                </li>
-                <li class=" ">
                     <a href="{{ route('recent.index') }}" class="">
                         <i class="las la-stopwatch iq-arrow-left"></i><span>Recent</span>
                     </a>
-                </li>
-                <li class=" ">
-                    <a href="page-favourite.html" class="">
-                        <i class="lar la-star"></i><span>Favourite</span>
-                    </a>
-                    <ul id="page-fevourite" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
-                    </ul>
                 </li>
                 <li class=" ">
                     <a href="{{ route('trash.index') }}" class="">

@@ -46,81 +46,86 @@
                                             aria-labelledby="folderMenu{{ $folder->id }}">
                                             <a class="dropdown-item" href="{{ route('folders.show', $folder->id) }}"><i
                                                     class="ri-eye-fill mr-2"></i>Open</a>
-                                            <a class="dropdown-item" href="#"><i class="ri-pencil-fill mr-2"></i>Rename</a>
-                                            <a class="dropdown-item delete-folder" href="#"
-                                                data-folder-id="{{ $folder->id }}"><i
-                                                    class="ri-delete-bin-6-fill mr-2"></i>Delete</a>
+                                            <a class="dropdown-item rename-folder" href="#"
+                                                data-folder-id="{{ $folder->id }}"
+                                                data-folder-name="{{ $folder->name }}"><i class="ri-pencil-fill mr-2"></i>Rename</a>
+                                                    <a class="dropdown-item delete-folder" href="#"
+                                                        data-folder-id="{{ $folder->id }}"><i
+                                                            class="ri-delete-bin-6-fill mr-2"></i>Delete</a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    <a href="{{ route('folders.show', $folder->id) }}" class="folder">
+                                        <h5 class="mb-2 text-truncate" title="{{ $folder->name }}">{{ $folder->name }}</h5>
+                                        <p class="mb-2"><i class="lar la-clock text-warning mr-2 font-size-20"></i>
+                                            {{ $folder->created_at->format('d M, Y') }}</p>
+                                        <p class="mb-0"><i class="las la-file-alt text-warning mr-2 font-size-20"></i>
+                                            {{ $folder->files->count() }} Files</p>
+                                    </a>
                                 </div>
                             </div>
-                            <a href="{{ route('folders.show', $folder->id) }}" class="folder">
-                                <h5 class="mb-2 text-truncate" title="{{ $folder->name }}">{{ $folder->name }}</h5>
-                                <p class="mb-2"><i class="lar la-clock text-warning mr-2 font-size-20"></i>
-                                    {{ $folder->created_at->format('d M, Y') }}</p>
-                                <p class="mb-0"><i class="las la-file-alt text-warning mr-2 font-size-20"></i>
-                                    {{ $folder->files->count() }} Files</p>
-                            </a>
                         </div>
-                    </div>
-                </div>
             @empty
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <i class="ri-information-line"></i> No folders created yet. Click "New Folder" in the sidebar to create
-                        one.
-                    </div>
-                </div>
-            @endforelse
-
-            <!-- Documents -->
-            <div class="col-lg-12">
-                <div class="card card-block card-stretch card-transparent ">
-                    <div class="card-header d-flex justify-content-between pb-0">
-                        <div class="header-title">
-                            <h4 class="card-title">Documents</h4>
-                        </div>
-                        <div class="card-header-toolbar d-flex align-items-center">
-                            <span class="text-muted">{{ $files->count() }} file(s)</span>
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="ri-information-line"></i> No folders created yet. Click "New Folder" in the sidebar to create
+                            one.
                         </div>
                     </div>
-                </div>
-            </div>
+                @endforelse
 
-            @forelse($files as $file)
-                <div class="col-lg-3 col-md-6 col-sm-6">
-                    <div class="card card-block card-stretch card-height">
-                        <div class="card-body image-thumb">
-                            <div>
-                                <div class="mb-4 text-center p-3 rounded iq-thumb">
-                                    <div class="iq-image-overlay"></div>
-                                    <img src="{{ $file->icon }}" class="img-fluid" alt="{{ $file->original_name }}">
-                                </div>
-                                <h6 class="text-truncate" title="{{ $file->original_name }}">{{ $file->original_name }}</h6>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <p class="text-muted small mb-0">{{ $file->formatted_size }}</p>
+                <!-- Documents -->
+                <div class="col-lg-12">
+                    <div class="card card-block card-stretch card-transparent ">
+                        <div class="card-header d-flex justify-content-between pb-0">
+                            <div class="header-title">
+                                <h4 class="card-title">Documents</h4>
+                            </div>
+                            <div class="card-header-toolbar d-flex align-items-center">
+                                <span class="text-muted">{{ $files->count() }} file(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @forelse($files as $file)
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body image-thumb">
+                                <div>
+                                    <div class="mb-4 text-center p-3 rounded iq-thumb">
+                                        <div class="iq-image-overlay"></div>
+                                        <img src="{{ $file->icon }}" class="img-fluid" alt="{{ $file->original_name }}">
+                                    </div>
+                                    <h6 class="text-truncate" title="{{ $file->original_name }}">{{ $file->original_name }}</h6>
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <a href="#" class="share-file d-flex justify-content-between align-items-center mx-2"
-                                            data-file-id="{{ $file->id }}">
-                                            <i class="ri-share-fill"></i>
-                                        </a>
-                                        <div class="card-header-toolbar">
-                                            <div class="dropdown">
-                                                <span class="dropdown-toggle" id="fileMenu{{ $file->id }}"
-                                                    data-toggle="dropdown">
-                                                    <i class="ri-more-2-fill"></i>
-                                                </span>
-                                                <div class="dropdown-menu dropdown-menu-right"
-                                                    aria-labelledby="fileMenu{{ $file->id }}">
-                                                    <a class="dropdown-item" href="{{ route('files.view', $file->id) }}"><i
-                                                            class="ri-eye-fill mr-2"></i>Open</a>
-                                                    <a class="dropdown-item" href="#"><i
-                                                            class="ri-pencil-fill mr-2"></i>Rename</a>
-                                                    <a class="dropdown-item delete-file" href="#"
-                                                        data-file-id="{{ $file->id }}"><i
-                                                            class="ri-delete-bin-6-fill mr-2"></i>Delete</a>
-                                                    <a class="dropdown-item" href="{{ $file->download_url }}" download><i
-                                                            class="ri-download-line mr-2"></i>Download</a>
+                                        <p class="text-muted small mb-0">{{ $file->formatted_size }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="#" class="share-file d-flex justify-content-between align-items-center mx-2"
+                                                data-file-id="{{ $file->id }}">
+                                                <i class="ri-share-fill"></i>
+                                            </a>
+                                            <div class="card-header-toolbar">
+                                                <div class="dropdown">
+                                                    <span class="dropdown-toggle" id="fileMenu{{ $file->id }}"
+                                                        data-toggle="dropdown">
+                                                        <i class="ri-more-2-fill"></i>
+                                                    </span>
+                                                    <div class="dropdown-menu dropdown-menu-right"
+                                                        aria-labelledby="fileMenu{{ $file->id }}">
+                                                        <a class="dropdown-item" href="{{ route('files.view', $file->id) }}"><i
+                                                                class="ri-eye-fill mr-2"></i>Open</a>
+                                                        <a class="dropdown-item rename-file" href="#"
+                                                            data-file-id="{{ $file->id }}"
+                                                            data-file-name="{{ $file->original_name }}"><i
+                                                                class="ri-pencil-fill mr-2"></i>Rename</a>
+                                                        <a class="dropdown-item delete-file" href="#"
+                                                            data-file-id="{{ $file->id }}"><i
+                                                                class="ri-delete-bin-6-fill mr-2"></i>Delete</a>
+                                                        <a class="dropdown-item" href="{{ $file->download_url }}" download><i
+                                                                class="ri-download-line mr-2"></i>Download</a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -129,111 +134,137 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            @empty
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <i class="ri-information-line"></i> No files uploaded yet. Click "Upload Files" in the sidebar to get
-                        started.
+                @empty
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="ri-information-line"></i> No files uploaded yet. Click "Upload Files" in the sidebar to get
+                            started.
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Share Modal -->
+        <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="shareModalLabel"><i class="ri-share-fill mr-2"></i>Share File</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="shareForm">
+                            <input type="hidden" id="shareFileId" name="file_id">
+                            <input type="hidden" id="shareType" name="shareable_type" value="file">
+
+                            <!-- Share Type Selection -->
+                            <div class="form-group">
+                                <label>Share with:</label>
+                                <div class="custom-control custom-radio mb-2">
+                                    <input type="radio" id="shareLink" name="access_type" class="custom-control-input"
+                                        value="link" checked>
+                                    <label class="custom-control-label" for="shareLink">
+                                        <i class="ri-links-fill mr-1"></i> Anyone with the link
+                                    </label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="shareEmail" name="access_type" class="custom-control-input"
+                                        value="email">
+                                    <label class="custom-control-label" for="shareEmail">
+                                        <i class="ri-mail-fill mr-1"></i> Specific users
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Email Input Section (hidden by default) -->
+                            <div id="emailSection" class="form-group" style="display: none;">
+                                <label>Email addresses:</label>
+                                <div id="emailInputs">
+                                    <div class="input-group mb-2 email-input-group">
+                                        <input type="email" class="form-control email-input" placeholder="Enter email address"
+                                            required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-danger remove-email" type="button"
+                                                style="display: none;">
+                                                <i class="ri-close-line"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addEmailBtn">
+                                    <i class="ri-add-line"></i> Add another email
+                                </button>
+                            </div>
+
+                            <!-- Permission Selection -->
+                            <div class="form-group">
+                                <label for="permission">Permission:</label>
+                                <select class="form-control" id="permission" name="permission" required>
+                                    <option value="view">View only</option>
+                                    <option value="download" selected>View and download</option>
+                                    <option value="edit">View, download and edit</option>
+                                </select>
+                            </div>
+
+                            <!-- Expiration Date -->
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="setExpiration">
+                                    <label class="custom-control-label" for="setExpiration">Set expiration date</label>
+                                </div>
+                                <input type="datetime-local" class="form-control mt-2" id="expiresAt" name="expires_at"
+                                    style="display: none;">
+                            </div>
+
+                            <!-- Link Display (shown after creation for link type) -->
+                            <div id="shareLinkDisplay" class="form-group" style="display: none;">
+                                <label>Share link:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="generatedLink" readonly>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button" id="copyLinkBtn">
+                                            <i class="ri-file-copy-line"></i> Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="shareSubmitBtn">
+                            <i class="ri-share-fill mr-1"></i> Share
+                        </button>
                     </div>
                 </div>
-            @endforelse
+            </div>
         </div>
-    </div>
 
-    <!-- Share Modal -->
-    <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel"
-        aria-hidden="true">
+    <!-- Rename Modal -->
+    <div class="modal fade" id="renameModal" tabindex="-1" role="dialog" aria-labelledby="renameModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="shareModalLabel"><i class="ri-share-fill mr-2"></i>Share File</h5>
+                    <h5 class="modal-title" id="renameModalLabel"><i class="ri-pencil-fill mr-2"></i>Rename</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="shareForm">
-                        <input type="hidden" id="shareFileId" name="file_id">
-                        <input type="hidden" id="shareType" name="shareable_type" value="file">
-
-                        <!-- Share Type Selection -->
-                        <div class="form-group">
-                            <label>Share with:</label>
-                            <div class="custom-control custom-radio mb-2">
-                                <input type="radio" id="shareLink" name="access_type" class="custom-control-input"
-                                    value="link" checked>
-                                <label class="custom-control-label" for="shareLink">
-                                    <i class="ri-links-fill mr-1"></i> Anyone with the link
-                                </label>
-                            </div>
-                            <div class="custom-control custom-radio">
-                                <input type="radio" id="shareEmail" name="access_type" class="custom-control-input"
-                                    value="email">
-                                <label class="custom-control-label" for="shareEmail">
-                                    <i class="ri-mail-fill mr-1"></i> Specific users
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Email Input Section (hidden by default) -->
-                        <div id="emailSection" class="form-group" style="display: none;">
-                            <label>Email addresses:</label>
-                            <div id="emailInputs">
-                                <div class="input-group mb-2 email-input-group">
-                                    <input type="email" class="form-control email-input" placeholder="Enter email address"
-                                        required>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-danger remove-email" type="button"
-                                            style="display: none;">
-                                            <i class="ri-close-line"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="addEmailBtn">
-                                <i class="ri-add-line"></i> Add another email
-                            </button>
-                        </div>
-
-                        <!-- Permission Selection -->
-                        <div class="form-group">
-                            <label for="permission">Permission:</label>
-                            <select class="form-control" id="permission" name="permission" required>
-                                <option value="view">View only</option>
-                                <option value="download" selected>View and download</option>
-                                <option value="edit">View, download and edit</option>
-                            </select>
-                        </div>
-
-                        <!-- Expiration Date -->
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="setExpiration">
-                                <label class="custom-control-label" for="setExpiration">Set expiration date</label>
-                            </div>
-                            <input type="datetime-local" class="form-control mt-2" id="expiresAt" name="expires_at"
-                                style="display: none;">
-                        </div>
-
-                        <!-- Link Display (shown after creation for link type) -->
-                        <div id="shareLinkDisplay" class="form-group" style="display: none;">
-                            <label>Share link:</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="generatedLink" readonly>
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" type="button" id="copyLinkBtn">
-                                        <i class="ri-file-copy-line"></i> Copy
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+                    <div class="form-group mb-0">
+                        <label for="renameInput">New name:</label>
+                        <input type="text" class="form-control" id="renameInput" placeholder="Enter new name" maxlength="255">
+                        <div class="invalid-feedback" id="renameError"></div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="shareSubmitBtn">
-                        <i class="ri-share-fill mr-1"></i> Share
+                    <button type="button" class="btn btn-primary" id="renameSubmitBtn">
+                        <i class="ri-check-line mr-1"></i>Rename
                     </button>
                 </div>
             </div>
@@ -341,6 +372,8 @@
     <script>
         $(document).ready(function () {
             let currentFileId = null;
+            let currentFolderId = null;
+            let renameType = null; // 'file' or 'folder'
             let dragCounter = 0;
 
             // Drag and Drop functionality
@@ -548,6 +581,108 @@
                 xhr.send(formData);
             }
 
+            // Open rename modal for a FILE
+            $(document).on('click', '.rename-file', function (e) {
+                e.preventDefault();
+                currentFileId = $(this).data('file-id');
+                renameType = 'file';
+                $('#renameInput').val($(this).data('file-name'));
+                $('#renameInput').removeClass('is-invalid');
+                $('#renameError').text('');
+                $('#renameModalLabel').html('<i class="ri-pencil-fill mr-2"></i>Rename File');
+                $('#renameModal').modal('show');
+            });
+
+            // Open rename modal for a FOLDER
+            $(document).on('click', '.rename-folder', function (e) {
+                e.preventDefault();
+                currentFolderId = $(this).data('folder-id');
+                renameType = 'folder';
+                $('#renameInput').val($(this).data('folder-name'));
+                $('#renameInput').removeClass('is-invalid');
+                $('#renameError').text('');
+                $('#renameModalLabel').html('<i class="ri-pencil-fill mr-2"></i>Rename Folder');
+                $('#renameModal').modal('show');
+            });
+
+            // Focus input when modal opens
+            $('#renameModal').on('shown.bs.modal', function () {
+                $('#renameInput').focus().select();
+            });
+
+            // Submit rename
+            $('#renameSubmitBtn').on('click', function () {
+                submitRename();
+            });
+
+            // Allow submitting with Enter key
+            $('#renameInput').on('keypress', function (e) {
+                if (e.which === 13) submitRename();
+            });
+
+            function submitRename() {
+                const newName = $('#renameInput').val().trim();
+                if (!newName) {
+                    $('#renameInput').addClass('is-invalid');
+                    $('#renameError').text('Name cannot be empty.');
+                    return;
+                }
+
+                const url = renameType === 'file'
+                    ? `/files/${currentFileId}/rename`
+                    : `/folders/${currentFolderId}/rename`;
+
+                $('#renameSubmitBtn').prop('disabled', true).html('<i class="ri-loader-4-line mr-1"></i>Renaming...');
+
+                $.ajax({
+                    url: url,
+                    method: 'PUT',
+                    data: { name: newName },
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    success: function (response) {
+                        $('#renameModal').modal('hide');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Renamed!',
+                            text: response.message,
+                            timer: 1800,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Update the name in the DOM without reloading
+                            if (renameType === 'file') {
+                                $(`[data-file-id="${currentFileId}"]`)
+                                    .data('file-name', response.new_name)
+                                    .attr('data-file-name', response.new_name);
+                                // Update displayed name in card
+                                $(`[data-file-id="${currentFileId}"]`)
+                                    .closest('.card')
+                                    .find('h6.text-truncate')
+                                    .text(response.new_name)
+                                    .attr('title', response.new_name);
+                            } else {
+                                $(`[data-folder-id="${currentFolderId}"]`)
+                                    .data('folder-name', response.new_name)
+                                    .attr('data-folder-name', response.new_name);
+                                // Update displayed name in card
+                                $(`[data-folder-id="${currentFolderId}"]`)
+                                    .closest('.card')
+                                    .find('h5.text-truncate')
+                                    .text(response.new_name)
+                                    .attr('title', response.new_name);
+                            }
+                        });
+                    },
+                    error: function (xhr) {
+                        const msg = xhr.responseJSON?.message || 'Rename failed. Please try again.';
+                        $('#renameInput').addClass('is-invalid');
+                        $('#renameError').text(msg);
+                    },
+                    complete: function () {
+                        $('#renameSubmitBtn').prop('disabled', false).html('<i class="ri-check-line mr-1"></i>Rename');
+                    }
+                });
+            }
+
             // Open share modal
             $('.share-file').on('click', function (e) {
                 e.preventDefault();
@@ -577,15 +712,15 @@
             // Add email input
             $('#addEmailBtn').on('click', function () {
                 const emailGroup = `
-                                                                <div class="input-group mb-2 email-input-group">
-                                                                    <input type="email" class="form-control email-input" placeholder="Enter email address" required>
-                                                                    <div class="input-group-append">
-                                                                        <button class="btn btn-outline-danger remove-email" type="button">
-                                                                            <i class="ri-close-line"></i>
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            `;
+                    <div class="input-group mb-2 email-input-group">
+                        <input type="email" class="form-control email-input" placeholder="Enter email address" required>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-danger remove-email" type="button">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
                 $('#emailInputs').append(emailGroup);
                 updateRemoveButtons();
             });
@@ -738,15 +873,15 @@
             // Helper function to reset email inputs
             function resetEmailInputs() {
                 $('#emailInputs').html(`
-                                                                <div class="input-group mb-2 email-input-group">
-                                                                    <input type="email" class="form-control email-input" placeholder="Enter email address" required>
-                                                                    <div class="input-group-append">
-                                                                        <button class="btn btn-outline-danger remove-email" type="button" style="display: none;">
-                                                                            <i class="ri-close-line"></i>
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            `);
+                    <div class="input-group mb-2 email-input-group">
+                        <input type="email" class="form-control email-input" placeholder="Enter email address" required>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-danger remove-email" type="button" style="display: none;">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+                    </div>
+                `);
                 $('#shareSubmitBtn').show();
             }
 

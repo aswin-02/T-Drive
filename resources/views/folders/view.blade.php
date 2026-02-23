@@ -74,7 +74,10 @@
                                                 aria-labelledby="folderMenu{{ $subFolder->id }}">
                                                 <a class="dropdown-item" href="{{ route('folders.show', $subFolder->id) }}"><i
                                                         class="ri-eye-fill mr-2"></i>Open</a>
-                                                <a class="dropdown-item" href="#"><i class="ri-pencil-fill mr-2"></i>Rename</a>
+                                                <a class="dropdown-item rename-folder" href="#"
+                                                    data-folder-id="{{ $subFolder->id }}"
+                                                    data-folder-name="{{ $subFolder->name }}"><i
+                                                        class="ri-pencil-fill mr-2"></i>Rename</a>
                                                 <a class="dropdown-item" href="#"><i
                                                         class="ri-delete-bin-6-fill mr-2"></i>Delete</a>
                                             </div>
@@ -133,7 +136,8 @@
                                                         aria-labelledby="fileMenu{{ $file->id }}">
                                                         <a class="dropdown-item" href="{{ route('files.view', $file->id) }}"><i
                                                                 class="ri-eye-fill mr-2"></i>Open</a>
-                                                        <a class="dropdown-item" href="#"><i
+                                                        <a class="dropdown-item rename-file" href="#" data-file-id="{{ $file->id }}"
+                                                            data-file-name="{{ $file->original_name }}"><i
                                                                 class="ri-pencil-fill mr-2"></i>Rename</a>
                                                         <a class="dropdown-item" href="#"><i
                                                                 class="ri-delete-bin-6-fill mr-2"></i>Delete</a>
@@ -266,6 +270,35 @@
             </div>
         </div>
     </div>
+
+    <!-- Rename Modal -->
+    <div class="modal fade" id="renameModal" tabindex="-1" role="dialog" aria-labelledby="renameModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renameModalLabel"><i class="ri-pencil-fill mr-2"></i>Rename</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-0">
+                        <label for="renameInput">New name:</label>
+                        <input type="text" class="form-control" id="renameInput" placeholder="Enter new name"
+                            maxlength="255">
+                        <div class="invalid-feedback" id="renameError"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="renameSubmitBtn">
+                        <i class="ri-check-line mr-1"></i>Rename
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -302,15 +335,15 @@
             // Add email input
             $('#addEmailBtn').on('click', function () {
                 const emailGroup = `
-                    <div class="input-group mb-2 email-input-group">
-                        <input type="email" class="form-control email-input" placeholder="Enter email address" required>
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-danger remove-email" type="button">
-                                <i class="ri-close-line"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
+                            <div class="input-group mb-2 email-input-group">
+                                <input type="email" class="form-control email-input" placeholder="Enter email address" required>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-danger remove-email" type="button">
+                                        <i class="ri-close-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
                 $('#emailInputs').append(emailGroup);
                 updateRemoveButtons();
             });
@@ -439,16 +472,119 @@
             // Helper function to reset email inputs
             function resetEmailInputs() {
                 $('#emailInputs').html(`
-                    <div class="input-group mb-2 email-input-group">
-                        <input type="email" class="form-control email-input" placeholder="Enter email address" required>
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-danger remove-email" type="button" style="display: none;">
-                                <i class="ri-close-line"></i>
-                            </button>
-                        </div>
-                    </div>
-                `);
+                            <div class="input-group mb-2 email-input-group">
+                                <input type="email" class="form-control email-input" placeholder="Enter email address" required>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-danger remove-email" type="button" style="display: none;">
+                                        <i class="ri-close-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `);
                 $('#shareSubmitBtn').show();
+            }
+
+            // ── Rename functionality ──────────────────────────────────────
+            let currentFolderRenameId = null;
+            let renameType = null; // 'file' or 'folder'
+
+            // Open rename modal for a FILE
+            $(document).on('click', '.rename-file', function (e) {
+                e.preventDefault();
+                currentFileId = $(this).data('file-id');
+                renameType = 'file';
+                $('#renameInput').val($(this).data('file-name'));
+                $('#renameInput').removeClass('is-invalid');
+                $('#renameError').text('');
+                $('#renameModalLabel').html('<i class="ri-pencil-fill mr-2"></i>Rename File');
+                $('#renameModal').modal('show');
+            });
+
+            // Open rename modal for a FOLDER
+            $(document).on('click', '.rename-folder', function (e) {
+                e.preventDefault();
+                currentFolderRenameId = $(this).data('folder-id');
+                renameType = 'folder';
+                $('#renameInput').val($(this).data('folder-name'));
+                $('#renameInput').removeClass('is-invalid');
+                $('#renameError').text('');
+                $('#renameModalLabel').html('<i class="ri-pencil-fill mr-2"></i>Rename Folder');
+                $('#renameModal').modal('show');
+            });
+
+            // Focus input when modal opens
+            $('#renameModal').on('shown.bs.modal', function () {
+                $('#renameInput').focus().select();
+            });
+
+            // Submit rename
+            $('#renameSubmitBtn').on('click', function () {
+                submitRename();
+            });
+
+            // Allow Enter key to submit
+            $('#renameInput').on('keypress', function (e) {
+                if (e.which === 13) submitRename();
+            });
+
+            function submitRename() {
+                const newName = $('#renameInput').val().trim();
+                if (!newName) {
+                    $('#renameInput').addClass('is-invalid');
+                    $('#renameError').text('Name cannot be empty.');
+                    return;
+                }
+
+                const url = renameType === 'file'
+                    ? `/files/${currentFileId}/rename`
+                    : `/folders/${currentFolderRenameId}/rename`;
+
+                $('#renameSubmitBtn').prop('disabled', true).html('<i class="ri-loader-4-line mr-1"></i>Renaming...');
+
+                $.ajax({
+                    url: url,
+                    method: 'PUT',
+                    data: { name: newName },
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    success: function (response) {
+                        $('#renameModal').modal('hide');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Renamed!',
+                            text: response.message,
+                            timer: 1800,
+                            showConfirmButton: false
+                        }).then(() => {
+                            if (renameType === 'file') {
+                                $(`[data-file-id="${currentFileId}"]`)
+                                    .data('file-name', response.new_name)
+                                    .attr('data-file-name', response.new_name);
+                                $(`[data-file-id="${currentFileId}"]`)
+                                    .closest('.card')
+                                    .find('h6.text-truncate')
+                                    .text(response.new_name)
+                                    .attr('title', response.new_name);
+                            } else {
+                                $(`[data-folder-id="${currentFolderRenameId}"]`)
+                                    .data('folder-name', response.new_name)
+                                    .attr('data-folder-name', response.new_name);
+                                $(`[data-folder-id="${currentFolderRenameId}"]`)
+                                    .closest('.card')
+                                    .find('h5.text-truncate')
+                                    .text(response.new_name)
+                                    .attr('title', response.new_name);
+                            }
+                        });
+                    },
+                    error: function (xhr) {
+                        const msg = xhr.responseJSON?.message || 'Rename failed. Please try again.';
+                        $('#renameInput').addClass('is-invalid');
+                        $('#renameError').text(msg);
+                    },
+                    complete: function () {
+                        $('#renameSubmitBtn').prop('disabled', false).html('<i class="ri-check-line mr-1"></i>Rename');
+                    }
+                });
             }
         });
     </script>

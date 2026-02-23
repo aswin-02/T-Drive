@@ -169,6 +169,67 @@ class FolderController extends Controller
     }
 
     /**
+     * Rename a folder
+     */
+    public function rename(Request $request, $id)
+    {
+        try {
+            $folder = Folder::findOrFail($id);
+
+            // Check if user owns the folder or is admin
+            if ($folder->user_id !== Auth::id() && Auth::user()->user_type !== 'admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access',
+                ], 403);
+            }
+
+            $request->validate([
+                'name' => 'required|string|max:255',
+            ]);
+
+            $newName = trim($request->name);
+
+            // Check for duplicate folder name in the same parent (excluding this folder)
+            $duplicate = Folder::where('user_id', Auth::id())
+                ->where('parent_id', $folder->parent_id)
+                ->where('name', $newName)
+                ->where('id', '!=', $folder->id)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if ($duplicate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'A folder with this name already exists in this location.',
+                ], 422);
+            }
+
+            $folder->name = $newName;
+            $folder->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Folder renamed successfully.',
+                'new_name' => $newName,
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Folder rename failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to rename folder: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Get appropriate icon for file type
      */
     private function getFileIcon($mimeType)
