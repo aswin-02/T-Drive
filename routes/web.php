@@ -43,6 +43,7 @@ Route::post('login', [AdminAuthController::class, 'login'])->name('admin.login.p
 // Public share viewing routes (no auth required)
 Route::get('/s/{token}', [\App\Http\Controllers\ShareController::class, 'view'])->name('shares.view');
 Route::get('/s/{token}/download', [\App\Http\Controllers\ShareController::class, 'download'])->name('shares.download');
+Route::get('/s/{token}/preview-pdf', [\App\Http\Controllers\ShareController::class, 'previewPdf'])->name('shares.preview-pdf');
 
 
 // Protected routes for authenticated users (both admin and user)
@@ -54,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
     // File routes
     Route::post('/files/upload', [\App\Http\Controllers\FileController::class, 'upload'])->name('files.upload');
     Route::get('/files/{id}/view', [\App\Http\Controllers\FileController::class, 'view'])->name('files.view');
+    Route::get('/files/{id}/preview-pdf', [\App\Http\Controllers\FileController::class, 'previewAsPdf'])->name('files.preview-pdf');
     Route::get('/files/{id}/download', [\App\Http\Controllers\FileController::class, 'download'])->name('files.download');
     Route::delete('/files/{id}', [\App\Http\Controllers\FileController::class, 'destroy'])->name('files.destroy');
     Route::post('/files/{id}/restore', [\App\Http\Controllers\FileController::class, 'restore'])->name('files.restore');

@@ -71,25 +71,54 @@ class ShareController extends Controller
                 ], 403);
             }
 
-            // Create the share
-            $share = Share::create([
-                'owner_id' => Auth::id(),
-                'shareable_type' => $data['shareable_type'],
-                'shareable_id' => $data['shareable_id'],
-                'access_type' => $data['access_type'],
-                'permission' => $data['permission'],
-                'expires_at' => $data['expires_at'] ?? null,
-                'token' => $data['access_type'] === 'link' ? Str::random(32) : null,
-            ]);
-
-            // If email sharing, create share_users records
+            // Create or update the share
+            // For email shares: check if this exact file/folder is already shared
+            // with any of the provided emails — update instead of duplicating.
             if ($data['access_type'] === 'email' && !empty($data['emails'])) {
                 foreach ($data['emails'] as $email) {
-                    ShareUser::create([
-                        'share_id' => $share->id,
-                        'email' => $email,
-                    ]);
+                    // Find existing email share for this shareable + this email
+                    $existingShareUser = ShareUser::whereHas('share', function ($q) use ($data) {
+                        $q->where('shareable_type', $data['shareable_type'])
+                            ->where('shareable_id', $data['shareable_id'])
+                            ->where('access_type', 'email');
+                    })->where('email', $email)->first();
+
+                    if ($existingShareUser) {
+                        // Update permission & expiry on the existing share
+                        $existingShareUser->share->update([
+                            'permission' => $data['permission'],
+                            'expires_at' => $data['expires_at'] ?? null,
+                        ]);
+                        $share = $existingShareUser->share; // use the updated share for response
+                    } else {
+                        // No existing share — create a fresh one
+                        $share = Share::create([
+                            'owner_id' => Auth::id(),
+                            'shareable_type' => $data['shareable_type'],
+                            'shareable_id' => $data['shareable_id'],
+                            'access_type' => 'email',
+                            'permission' => $data['permission'],
+                            'expires_at' => $data['expires_at'] ?? null,
+                            'token' => null,
+                        ]);
+
+                        ShareUser::create([
+                            'share_id' => $share->id,
+                            'email' => $email,
+                        ]);
+                    }
                 }
+            } else {
+                // Link share — always create new (links are unique by design)
+                $share = Share::create([
+                    'owner_id' => Auth::id(),
+                    'shareable_type' => $data['shareable_type'],
+                    'shareable_id' => $data['shareable_id'],
+                    'access_type' => $data['access_type'],
+                    'permission' => $data['permission'],
+                    'expires_at' => $data['expires_at'] ?? null,
+                    'token' => Str::random(32),
+                ]);
             }
 
             // Prepare response
@@ -269,6 +298,93 @@ class ShareController extends Controller
     }
 
     /**
+     * Convert a shared PPT/PPTX to PDF via LibreOffice and stream inline.
+     * Public — accessible via share token (no auth needed for link shares).
+     */
+    public function previewPdf($token)
+    {
+        try {
+            $share = Share::with(['shareable', 'shareUsers'])
+                ->byToken($token)
+                ->active()
+                ->firstOrFail();
+
+            if ($share->isExpired()) {
+                abort(403, 'This share link has expired');
+            }
+
+            // Email-based share needs auth check
+            if ($share->access_type === 'email') {
+                if (!Auth::check()) {
+                    abort(403, 'Please login to access this shared file');
+                }
+                $hasAccess = $share->shareUsers->contains('email', Auth::user()->email);
+                if (!$hasAccess && $share->owner_id !== Auth::id()) {
+                    abort(403, 'You do not have permission to access this file');
+                }
+            }
+
+            $file = $share->shareable;
+            if (!$file || $share->shareable_type !== 'file') {
+                abort(404, 'File not found');
+            }
+
+            $sourcePath = storage_path('app/public/' . $file->path);
+            if (!file_exists($sourcePath)) {
+                abort(404, 'File not found on disk');
+            }
+
+            // Reuse same cache as the authenticated preview
+            $cacheKey = md5($file->path . filemtime($sourcePath));
+            $previewDir = storage_path('app/public/previews');
+            $pdfPath = $previewDir . '/' . $cacheKey . '.pdf';
+
+            if (!file_exists($pdfPath)) {
+                if (!is_dir($previewDir)) {
+                    mkdir($previewDir, 0755, true);
+                }
+
+                $libreoffice = trim(shell_exec('which libreoffice || which soffice') ?? '');
+                if (empty($libreoffice)) {
+                    abort(500, 'LibreOffice is not installed on this server.');
+                }
+
+                $cmd = $libreoffice
+                    . ' --headless --norestore --nofirststartwizard'
+                    . ' --convert-to pdf ' . escapeshellarg($sourcePath)
+                    . ' --outdir ' . escapeshellarg($previewDir) . ' 2>&1';
+
+                exec($cmd, $output, $exitCode);
+
+                $generatedPdf = $previewDir . '/' . pathinfo($file->stored_name, PATHINFO_FILENAME) . '.pdf';
+
+                if ($exitCode !== 0 || !file_exists($generatedPdf)) {
+                    \Log::error('LibreOffice share conversion failed', [
+                        'cmd' => $cmd,
+                        'output' => implode("\n", $output),
+                        'exit' => $exitCode,
+                    ]);
+                    abort(500, 'Failed to convert presentation to PDF.');
+                }
+
+                rename($generatedPdf, $pdfPath);
+            }
+
+            return response()->file($pdfPath, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="'
+                    . pathinfo($file->original_name, PATHINFO_FILENAME) . '.pdf"',
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Share link not found or expired');
+        } catch (\Exception $e) {
+            \Log::error('Share PPT preview failed: ' . $e->getMessage());
+            abort(500, $e->getMessage());
+        }
+    }
+
+    /**
      * Delete a share
      */
     public function destroy($id)
@@ -334,8 +450,10 @@ class ShareController extends Controller
         $shares = Share::with(['shareable', 'owner'])
             ->whereIn('id', $shareUserIds)
             ->active()
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('updated_at', 'desc') // latest first so unique() keeps most recent
+            ->get()
+            ->filter(fn($share) => $share->shareable !== null)       // skip deleted shareables
+            ->unique(fn($share) => $share->shareable_type . ':' . $share->shareable_id); // one per file/folder
 
         return view('shares.shared-with-me', compact('shares'));
     }

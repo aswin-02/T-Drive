@@ -37,12 +37,12 @@
 <style>
     .dark #globalSuggestionsBox {
         background-color: #000;
-        border:1px solid #3d3d3dff;
+        border: 1px solid #3d3d3dff;
     }
 
     #globalSuggestionsBox {
         background-color: #fff;
-        border:1px solid #e2e8f0;
+        border: 1px solid #e2e8f0;
     }
 </style>
 @stack('styles')
@@ -224,6 +224,7 @@
     <script src="{{ asset('vendor/doc-viewer/include/docx/jszip-utils.js')}}"></script>
     <script src="{{ asset('vendor/doc-viewer/include/docx/mammoth.browser.min.js')}}"></script>
     <!--PPTX-->
+    <script src="{{ asset('vendor/doc-viewer/include/PPTXjs/js/jszip2.min.js')}}"></script>
     <script src="{{ asset('vendor/doc-viewer/include/PPTXjs/js/filereader.js')}}"></script>
     <script src="{{ asset('vendor/doc-viewer/include/PPTXjs/js/d3.min.js')}}"></script>
     <script src="{{ asset('vendor/doc-viewer/include/PPTXjs/js/nv.d3.min.js')}}"></script>

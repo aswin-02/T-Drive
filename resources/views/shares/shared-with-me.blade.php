@@ -35,14 +35,15 @@
                                                 $item = $share->shareable;
                                                 $isFile = $share->shareable_type === 'file';
                                             @endphp
+                                            @continue(!$item){{-- skip orphaned shares --}}
                                             <tr>
                                                 <td>
                                                     @if($isFile)
                                                         <i class="ri-file-line mr-2"></i>
-                                                        {{ $item->original_name }}
+                                                        {{ $item->original_name ?? '(deleted file)' }}
                                                     @else
                                                         <i class="ri-folder-line mr-2"></i>
-                                                        {{ $item->name }}
+                                                        {{ $item->name ?? '(deleted folder)' }}
                                                     @endif
                                                 </td>
                                                 <td>

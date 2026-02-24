@@ -15,12 +15,28 @@ class FileController extends Controller
      */
     public function upload(Request $request)
     {
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip'];
+
         try {
             // Validate the request
             $request->validate([
                 'files' => 'required|array',
-                'files.*' => 'required|file|max:102400|mimes:jpg,jpeg,png,gif,svg,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,zip', // max 100MB
+                'files.*' => 'required|file|max:102400', // max 100MB
             ]);
+
+            // Validate file extensions manually (MIME detection is unreliable for Office formats on this server)
+            foreach ($request->file('files') as $index => $uploadedFile) {
+                $ext = strtolower($uploadedFile->getClientOriginalExtension());
+                if (!in_array($ext, $allowedExtensions)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validation failed',
+                        'errors' => [
+                            "files.$index" => ["The file type '.$ext' is not allowed. Allowed types: " . implode(', ', $allowedExtensions)],
+                        ],
+                    ], 422);
+                }
+            }
 
             $uploadedFiles = [];
             $user = Auth::user();
@@ -177,6 +193,79 @@ class FileController extends Controller
         } catch (\Exception $e) {
             \Log::error('File download failed: ' . $e->getMessage());
             abort(404, 'File not found');
+        }
+    }
+
+    /**
+     * Convert PPT/PPTX to PDF via LibreOffice and stream to browser.
+     * The converted PDF is cached in storage/app/public/previews/{hash}.pdf
+     * so subsequent views skip the conversion step.
+     */
+    public function previewAsPdf($id)
+    {
+        try {
+            $file = File::findOrFail($id);
+
+            // Auth check
+            if ($file->user_id !== Auth::id() && Auth::user()->user_type !== 'admin') {
+                abort(403, 'Unauthorized access');
+            }
+
+            $sourcePath = storage_path('app/public/' . $file->path);
+
+            if (!file_exists($sourcePath)) {
+                abort(404, 'File not found');
+            }
+
+            // Cache key: hash of file path + modification time so re-uploads invalidate cache
+            $cacheKey = md5($file->path . filemtime($sourcePath));
+            $previewDir = storage_path('app/public/previews');
+            $pdfPath = $previewDir . '/' . $cacheKey . '.pdf';
+
+            // Only convert if cached PDF doesn't already exist
+            if (!file_exists($pdfPath)) {
+                if (!is_dir($previewDir)) {
+                    mkdir($previewDir, 0755, true);
+                }
+
+                // LibreOffice headless conversion
+                $libreoffice = trim(shell_exec('which libreoffice || which soffice') ?? '');
+                if (empty($libreoffice)) {
+                    abort(500, 'LibreOffice is not installed on this server.');
+                }
+
+                $escapedSource = escapeshellarg($sourcePath);
+                $escapedDir = escapeshellarg($previewDir);
+                $cmd = "$libreoffice --headless --norestore --nofirststartwizard"
+                    . " --convert-to pdf $escapedSource --outdir $escapedDir 2>&1";
+
+                exec($cmd, $output, $exitCode);
+
+                // LibreOffice names the output after the source filename
+                $generatedPdf = $previewDir . '/' . pathinfo($file->stored_name, PATHINFO_FILENAME) . '.pdf';
+
+                if ($exitCode !== 0 || !file_exists($generatedPdf)) {
+                    \Log::error('LibreOffice conversion failed', [
+                        'cmd' => $cmd,
+                        'output' => implode("\n", $output),
+                        'exit' => $exitCode,
+                    ]);
+                    abort(500, 'Failed to convert presentation to PDF.');
+                }
+
+                // Rename to cache key so we can reuse it
+                rename($generatedPdf, $pdfPath);
+            }
+
+            // Stream the cached PDF directly to the browser (inline)
+            return response()->file($pdfPath, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . pathinfo($file->original_name, PATHINFO_FILENAME) . '.pdf"',
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('PPT preview failed: ' . $e->getMessage());
+            abort(500, $e->getMessage());
         }
     }
 
