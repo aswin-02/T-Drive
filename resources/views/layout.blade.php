@@ -5,10 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>T-Drive</title>
+    <title>BlackBox</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset('images/favicon.ico')}}" />
+    <!-- <link rel="shortcut icon" href="{{ asset('images/favicon.ico')}}" /> -->
 
     <link rel="stylesheet" href="{{ asset('css/backend-plugin.min.css')}}">
     <link rel="stylesheet" href="{{ asset('css/backende209.css?v=1.0.0')}}">
@@ -204,7 +204,7 @@
                 <div class="col-lg-6 text-right">
                     <span class="mr-1">
                         <script>document.write(new Date().getFullYear())</script>©
-                    </span> <a href="#" class="">T-Drive</a>.
+                    </span> <a href="#" class="">BlackBox</a>.
                 </div>
             </div>
         </div>

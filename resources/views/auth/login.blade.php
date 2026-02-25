@@ -7,7 +7,7 @@
     <title>CloudBOX | Responsive Bootstrap 4 Admin Dashboard Template</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" />
+    <!-- <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" /> -->
 
     <link rel="stylesheet" href="{{ asset('css/backend-plugin.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/backend.css?v=1.0.0') }}">

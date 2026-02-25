@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $file->original_name }} · T-Drive</title>
+    <title>{{ $file->original_name }} · BlackBox</title>
     <meta name="description" content="Shared file: {{ $file->original_name }}">
 
     <!-- Google Fonts -->
