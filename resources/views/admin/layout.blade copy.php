@@ -49,7 +49,7 @@
                 <nav class="navbar navbar-expand-lg navbar-light p-0">
                     <div class="iq-navbar-logo d-flex align-items-center justify-content-between">
                         <i class="ri-menu-line wrapper-menu"></i>
-                        <a href="index.html" class="header-logo">
+                        <a href="" class="header-logo">
                             <img src="{{ asset('images/logo.png')}}" class="img-fluid rounded-normal light-logo"
                                 alt="logo">
                             <img src="{{ asset('images/logo-white.png')}}"
@@ -272,8 +272,8 @@
             <div class="row">
                 <div class="col-lg-6">
                     <ul class="list-inline mb-0">
-                        <li class="list-inline-item"><a href="privacy-policy.html">Privacy Policy</a></li>
-                        <li class="list-inline-item"><a href="terms-of-service.html">Terms of Use</a></li>
+                        <li class="list-inline-item"><a href="">Privacy Policy</a></li>
+                        <li class="list-inline-item"><a href="">Terms of Use</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-6 text-right">

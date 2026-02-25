@@ -1,6 +1,6 @@
 <div class="iq-sidebar  sidebar-default " data-current-folder-id="{{ $currentFolderId ?? '' }}">
     <div class="iq-sidebar-logo d-flex align-items-center justify-content-between">
-        <a href="index.html" class="header-logo">
+        <a href="" class="header-logo">
             <img src="{{ asset('images/logo.png') }}" class="img-fluid rounded-normal light-logo" alt="logo">
             <img src="{{ asset('images/logo-white.png') }}" class="img-fluid rounded-normal darkmode-logo" alt="logo">
         </a>
