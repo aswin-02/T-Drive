@@ -344,7 +344,25 @@ class ShareController extends Controller
                     mkdir($previewDir, 0755, true);
                 }
 
-                $libreoffice = trim(shell_exec('which libreoffice || which soffice') ?? '');
+                $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+                if ($isWindows) {
+                    $libreoffice = trim(shell_exec('where soffice 2>NUL') ?? '');
+                    if (empty($libreoffice)) {
+                        foreach ([
+                            'C:\\Program Files\\LibreOffice\\program\\soffice.exe',
+                            'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe'
+                        ] as $c) {
+                            if (file_exists($c)) {
+                                $libreoffice = escapeshellarg($c);
+                                break;
+                            }
+                        }
+                    } else {
+                        $libreoffice = escapeshellarg(strtok($libreoffice, "\n"));
+                    }
+                } else {
+                    $libreoffice = trim(shell_exec('which libreoffice 2>/dev/null || which soffice 2>/dev/null') ?? '');
+                }
                 if (empty($libreoffice)) {
                     abort(500, 'LibreOffice is not installed on this server.');
                 }

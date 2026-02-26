@@ -197,6 +197,38 @@ class FileController extends Controller
     }
 
     /**
+     * Locate the LibreOffice executable cross-platform.
+     * Works on Linux, macOS, and Windows.
+     */
+    private static function findLibreOffice(): string
+    {
+        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
+        if ($isWindows) {
+            // 1. Try PATH via 'where' (Windows equivalent of 'which')
+            $path = trim(shell_exec('where soffice 2>NUL') ?? '');
+            if (!empty($path)) {
+                return escapeshellarg(strtok($path, "\n")); // first result only
+            }
+            // 2. Check common Windows install paths
+            $candidates = [
+                'C:\\Program Files\\LibreOffice\\program\\soffice.exe',
+                'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe',
+            ];
+            foreach ($candidates as $c) {
+                if (file_exists($c)) {
+                    return escapeshellarg($c);
+                }
+            }
+            return '';
+        }
+
+        // Linux / macOS — use 'which'
+        $path = trim(shell_exec('which libreoffice 2>/dev/null || which soffice 2>/dev/null') ?? '');
+        return $path; // already a valid shell path, no escaping needed here
+    }
+
+    /**
      * Convert PPT/PPTX to PDF via LibreOffice and stream to browser.
      * The converted PDF is cached in storage/app/public/previews/{hash}.pdf
      * so subsequent views skip the conversion step.
@@ -228,8 +260,8 @@ class FileController extends Controller
                     mkdir($previewDir, 0755, true);
                 }
 
-                // LibreOffice headless conversion
-                $libreoffice = trim(shell_exec('which libreoffice || which soffice') ?? '');
+                // Cross-platform LibreOffice detection
+                $libreoffice = self::findLibreOffice();
                 if (empty($libreoffice)) {
                     abort(500, 'LibreOffice is not installed on this server.');
                 }
