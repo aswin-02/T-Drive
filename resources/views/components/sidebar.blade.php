@@ -9,9 +9,9 @@
         </div>
     </div>
     <div class="data-scrollbar" data-scroll="1">
-        <!-- Hidden file input -->
+        <!-- Hidden file input — strict format whitelist -->
         <input type="file" id="fileUploadInput" multiple style="display: none;"
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip">
+            accept=".pdf,.xls,.xlsx,.ppt,.pptx,.zip,.jpg,.png,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip,image/jpeg,image/png">
 
         <div class="new-create select-dropdown input-prepend input-append">
             <div class="btn-group">
@@ -128,6 +128,26 @@
         }
 
         function uploadFiles(files) {
+            // ── Pre-flight client-side extension check ──
+            const allowed = ['pdf', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png'];
+            const rejected = [];
+            for (let i = 0; i < files.length; i++) {
+                const ext = files[i].name.split('.').pop().toLowerCase();
+                if (!allowed.includes(ext)) rejected.push(files[i].name);
+            }
+            if (rejected.length > 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid File Type',
+                    html: `<p>The following file(s) are not allowed:</p>
+                           <ul class="text-left text-danger">${rejected.map(n => `<li>${n}</li>`).join('')}</ul>
+                           <p class="text-muted small mt-2">Allowed formats: PDF, XLS, XLSX, PPT, PPTX, ZIP, JPG, PNG</p>`,
+                    confirmButtonText: 'OK'
+                });
+                fileInput.value = '';
+                return;
+            }
+
             const formData = new FormData();
 
             // Append all files to FormData
@@ -201,27 +221,34 @@
                         // Reset file input
                         fileInput.value = '';
 
-                        // Show success message
                         Swal.fire({
                             icon: 'success',
                             title: 'Success!',
                             text: data.message || 'Files uploaded successfully!',
                             timer: 2000,
                             showConfirmButton: false
-                        }).then(() => {
-                            window.location.reload();
-                        });
+                        }).then(() => { window.location.reload(); });
                     } catch (error) {
-                        console.error('Parse error:', error);
+                        Swal.fire({ icon: 'error', title: 'Upload Failed', text: 'Error processing server response.', confirmButtonText: 'OK' });
+                    }
+                } else if (xhr.status === 422) {
+                    // Show the exact validation error messages from the server
+                    fileInput.value = '';
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        const errors = data.errors || {};
+                        const msgs = Object.values(errors).flat();
                         Swal.fire({
                             icon: 'error',
-                            title: 'Upload Failed',
-                            text: 'Error processing server response.',
+                            title: 'File Not Allowed',
+                            html: `<ul class="text-left text-danger mb-0">${msgs.map(m => `<li>${m}</li>`).join('')}</ul>
+                                   <p class="text-muted small mt-3 mb-0">Allowed: PDF, XLS, XLSX, PPT, PPTX, ZIP, JPG, PNG</p>`,
                             confirmButtonText: 'OK'
                         });
+                    } catch (e) {
+                        Swal.fire({ icon: 'error', title: 'Validation Error', text: 'One or more files were rejected.', confirmButtonText: 'OK' });
                     }
                 } else {
-                    // Handle HTTP errors
                     Swal.fire({
                         icon: 'error',
                         title: 'Upload Failed',

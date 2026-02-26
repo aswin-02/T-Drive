@@ -15,24 +15,54 @@ class FileController extends Controller
      */
     public function upload(Request $request)
     {
-        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip'];
+        $allowedExtensions = ['pdf', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png'];
+
+        // Expected MIME types per extension (double-check to block renamed files)
+        $allowedMimes = [
+            'pdf' => ['application/pdf'],
+            'xls' => ['application/vnd.ms-excel', 'application/msexcel'],
+            'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            'ppt' => ['application/vnd.ms-powerpoint'],
+            'pptx' => ['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+            'zip' => ['application/zip', 'application/x-zip-compressed', 'multipart/x-zip'],
+            'jpg' => ['image/jpeg'],
+            'png' => ['image/png'],
+        ];
 
         try {
-            // Validate the request
+            // Basic validation
             $request->validate([
                 'files' => 'required|array',
-                'files.*' => 'required|file|max:102400', // max 100MB
+                'files.*' => 'required|file|max:102400', // max 100 MB
             ]);
 
-            // Validate file extensions manually (MIME detection is unreliable for Office formats on this server)
+            // Strict extension + MIME check on every file
             foreach ($request->file('files') as $index => $uploadedFile) {
                 $ext = strtolower($uploadedFile->getClientOriginalExtension());
+                $mime = strtolower($uploadedFile->getMimeType());
+
                 if (!in_array($ext, $allowedExtensions)) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Validation failed',
                         'errors' => [
-                            "files.$index" => ["The file type '.$ext' is not allowed. Allowed types: " . implode(', ', $allowedExtensions)],
+                            "files.$index" => [
+                                "'." . $ext . "' is not allowed. Accepted formats: "
+                                . implode(', ', array_map('strtoupper', $allowedExtensions))
+                            ],
+                        ],
+                    ], 422);
+                }
+
+                // MIME type must match the declared extension
+                if (!in_array($mime, $allowedMimes[$ext])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validation failed',
+                        'errors' => [
+                            "files.$index" => [
+                                "The file content does not match its extension '." . $ext . "'. Upload rejected."
+                            ],
                         ],
                     ], 422);
                 }

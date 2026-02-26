@@ -434,27 +434,20 @@
             function uploadDroppedFiles(files) {
                 const formData = new FormData();
 
-                // Validate and append files
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp',
-                    'application/pdf', 'application/msword',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'application/vnd.ms-excel',
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'application/vnd.ms-powerpoint',
-                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                    'application/zip', 'application/x-zip-compressed'];
-
-                const maxSize = 100 * 1024 * 1024; // 100MB
-                let validFiles = [];
+                // Strict whitelist — must match server validation exactly
+                const allowedExts = ['pdf','xls','xlsx','ppt','pptx','zip','jpg','png'];
+                const maxSize = 100 * 1024 * 1024; // 100 MB
+                let validFiles  = [];
                 let invalidFiles = [];
 
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
+                    const ext  = file.name.split('.').pop().toLowerCase();
 
-                    if (!allowedTypes.includes(file.type)) {
-                        invalidFiles.push(file.name + ' (unsupported type)');
+                    if (!allowedExts.includes(ext)) {
+                        invalidFiles.push(file.name + ' (type not allowed — must be PDF, XLS, XLSX, PPT, PPTX, ZIP, JPG or PNG)');
                     } else if (file.size > maxSize) {
-                        invalidFiles.push(file.name + ' (file too large)');
+                        invalidFiles.push(file.name + ' (file too large, max 100 MB)');
                     } else {
                         validFiles.push(file);
                         formData.append('files[]', file);
@@ -535,24 +528,30 @@
                     if (xhr.status === 200) {
                         try {
                             const data = JSON.parse(xhr.responseText);
-
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Upload Complete!',
                                 text: data.message || `${fileCount} file(s) uploaded successfully!`,
                                 timer: 2000,
                                 showConfirmButton: false
-                            }).then(() => {
-                                window.location.reload();
-                            });
+                            }).then(() => { window.location.reload(); });
                         } catch (error) {
-                            console.error('Parse error:', error);
+                            Swal.fire({ icon: 'error', title: 'Upload Failed', text: 'Error processing server response.', confirmButtonText: 'OK' });
+                        }
+                    } else if (xhr.status === 422) {
+                        // Validation error — show specific messages from server
+                        try {
+                            const data = JSON.parse(xhr.responseText);
+                            const errors = data.errors || {};
+                            const msgs   = Object.values(errors).flat();
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Upload Failed',
-                                text: 'Error processing server response.',
+                                title: 'File Not Allowed',
+                                html: `<ul class="text-left text-danger mb-0">${msgs.map(m => `<li>${m}</li>`).join('')}</ul>`,
                                 confirmButtonText: 'OK'
                             });
+                        } catch (e) {
+                            Swal.fire({ icon: 'error', title: 'Validation Error', text: 'One or more files were rejected by the server.', confirmButtonText: 'OK' });
                         }
                     } else {
                         Swal.fire({
