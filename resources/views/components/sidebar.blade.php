@@ -11,7 +11,7 @@
     <div class="data-scrollbar" data-scroll="1">
         <!-- Hidden file input — strict format whitelist -->
         <input type="file" id="fileUploadInput" multiple style="display: none;"
-            accept=".pdf,.xls,.xlsx,.ppt,.pptx,.zip,.jpg,.png,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip,image/jpeg,image/png">
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.jpg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip,image/jpeg,image/png">
 
         <div class="new-create select-dropdown input-prepend input-append">
             <div class="btn-group">
@@ -129,7 +129,7 @@
 
         function uploadFiles(files) {
             // ── Pre-flight client-side extension check ──
-            const allowed = ['pdf', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png'];
+            const allowed = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png'];
             const rejected = [];
             for (let i = 0; i < files.length; i++) {
                 const ext = files[i].name.split('.').pop().toLowerCase();
@@ -141,7 +141,7 @@
                     title: 'Invalid File Type',
                     html: `<p>The following file(s) are not allowed:</p>
                            <ul class="text-left text-danger">${rejected.map(n => `<li>${n}</li>`).join('')}</ul>
-                           <p class="text-muted small mt-2">Allowed formats: PDF, XLS, XLSX, PPT, PPTX, ZIP, JPG, PNG</p>`,
+                           <p class="text-muted small mt-2">Allowed formats: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, JPG, PNG</p>`,
                     confirmButtonText: 'OK'
                 });
                 fileInput.value = '';

@@ -15,11 +15,13 @@ class FileController extends Controller
      */
     public function upload(Request $request)
     {
-        $allowedExtensions = ['pdf', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png'];
+        $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png'];
 
         // Expected MIME types per extension (double-check to block renamed files)
         $allowedMimes = [
             'pdf' => ['application/pdf'],
+            'doc' => ['application/msword', 'application/vnd.ms-word'],
+            'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
             'xls' => ['application/vnd.ms-excel', 'application/msexcel'],
             'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
             'ppt' => ['application/vnd.ms-powerpoint'],
