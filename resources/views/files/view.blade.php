@@ -64,7 +64,25 @@
             border: 1px solid #ccc;
             padding: 6px 10px;
         }
+
+        /* Spreadsheet sheet tabs */
+        .sheet-tab-strip {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        #hot-container {
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
     </style>
+    @if($viewerType === 'spreadsheet')
+        <link rel="stylesheet" href="{{ asset('vendor/doc-viewer/include/SheetJS/handsontable.full.min.css') }}">
+    @endif
 @endpush
 
 @section('content')
@@ -277,26 +295,26 @@ We just call it directly — no duplicate
         @push('scripts')
                 <script>
                     (function () {
-                const fileUrl = "{{ url($fileUrl) }}";
+                            const fileUrl = "{{ url($fileUrl) }}";
 
                     fetch(fileUrl)
-                    .then(r => {
-                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                                .then(r => {
+                                    if (!r.ok) throw new Error('HTTP ' + r.status);
                     return r.arrayBuffer();
-                    })
-                    .then(buf => mammoth.convertToHtml({arrayBuffer: buf }))
-                    .then(result => {
+                                })
+                                .then(buf => mammoth.convertToHtml({arrayBuffer: buf }))
+                                .then(result => {
                         document.getElementById('viewer-loading').style.display = 'none';
                     const out = document.getElementById('docx-output');
                     out.innerHTML = result.value || '<p class="text-muted">Document appears to be empty.</p>';
                     out.style.display = 'block';
-                    })
-                    .catch(err => {
+                                })
+                                .catch(err => {
                         document.getElementById('viewer-loading').style.display = 'none';
                     document.getElementById('doc-error-msg').textContent = err.message;
                     document.getElementById('doc-error').style.display   = 'block';
-                    });
-            })();
+                                });
+                        })();
             </script>
         @endpush
     @endif
@@ -307,54 +325,59 @@ XLS / XLSX → SheetJS + Handsontable
 ════════════════════════════════════════════════════════ --}}
 @if($viewerType === 'spreadsheet')
     @push('scripts')
+        <script src="{{ asset('vendor/doc-viewer/include/SheetJS/xlsx.full.min.js') }}"></script>
+        <script src="{{ asset('vendor/doc-viewer/include/SheetJS/handsontable.full.min.js') }}"></script>
         <script>
                 (function () {
-            const fileUrl = "{{ url($fileUrl) }}";
+                    const fileUrl = "{{ url($fileUrl) }}";
                 let hotInstance = null;
                 let workbook    = null;
 
                 fetch(fileUrl)
-                .then(r => {
-                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                        .then(r => {
+                            if (!r.ok) throw new Error('HTTP ' + r.status);
                 return r.arrayBuffer();
-                })
-                .then(buf => {
+                        })
+                        .then(buf => {
                     workbook = XLSX.read(new Uint8Array(buf), { type: 'array' });
 
                 document.getElementById('viewer-loading').style.display = 'none';
                 document.getElementById('office-viewer-wrap').style.display = 'block';
 
-                // Build sheet-name tabs inside the content div
+                // Build sheet-tab strip + handsontable container
                 const wrap = document.getElementById('office-content');
-                let tabHtml = '<div style="display:flex;gap:6px;flex-wrap:wrap;padding:10px 12px;background:#f8f9fa;border-bottom:1px solid #dee2e6;">';
-                    workbook.SheetNames.forEach((name, i) => {
+                let tabHtml = '<div class="sheet-tab-strip">';
+                            workbook.SheetNames.forEach((name, i) => {
                         tabHtml += `<button class="sheet-tab btn btn-sm ${i === 0 ? 'btn-primary' : 'btn-outline-secondary'}"
-                                      data-sheet="${name}" style="border-radius:6px 6px 0 0;">${escH(name)}</button>`;
-                    });
-                    tabHtml += '</div><div id="hot-container" style="height:580px;overflow:auto;"></div>';
+                                                      data-sheet="${escH(name)}"
+                                                      style="border-radius:6px 6px 0 0;">${escH(name)}</button>`;
+                            });
+                    tabHtml += '</div><div id="hot-container" style="height:580px;"></div>';
                 wrap.innerHTML = tabHtml;
 
-                    // Tab click
-                    wrap.querySelectorAll('.sheet-tab').forEach(btn => {
+                            // Tab click handler
+                            wrap.querySelectorAll('.sheet-tab').forEach(btn => {
                     btn.addEventListener('click', function () {
                         wrap.querySelectorAll('.sheet-tab').forEach(b => {
-                            b.classList.replace('btn-primary', 'btn-outline-secondary');
+                            b.classList.remove('btn-primary');
+                            b.classList.add('btn-outline-secondary');
                         });
-                        this.classList.replace('btn-outline-secondary', 'btn-primary');
+                        this.classList.remove('btn-outline-secondary');
+                        this.classList.add('btn-primary');
                         renderSheet(this.dataset.sheet);
                     });
-                    });
+                            });
 
                 renderSheet(workbook.SheetNames[0]);
-                })
-                .catch(err => {
+                        })
+                        .catch(err => {
                     document.getElementById('viewer-loading').style.display = 'none';
                 document.getElementById('viewer-error-msg').textContent = 'Spreadsheet error: ' + err.message;
                 document.getElementById('viewer-error').style.display   = 'block';
-                });
+                        });
 
                 function renderSheet(name) {
-                const sheet = workbook.Sheets[name];
+                        const sheet = workbook.Sheets[name];
                 const data  = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: '' });
 
                 if (hotInstance) {hotInstance.destroy(); hotInstance = null; }
@@ -373,13 +396,18 @@ XLS / XLSX → SheetJS + Handsontable
                 contextMenu       : false,
                 manualColumnResize: true,
                 manualRowResize   : true,
-                });
-            }
+                renderAllRows     : false,
+                viewportRowRenderingOffset: 50,
+                        });
+                    }
 
                 function escH(s) {
-                return String(s).replace(/&/g,'&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            }
-        }) ();
+                        return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;');
+                    }
+                }) ();
         </script>
     @endpush
 @endif
