@@ -17,15 +17,34 @@ class FileController extends Controller
     {
         $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png'];
 
-        // Expected MIME types per extension (double-check to block renamed files)
+        // Expected MIME types per extension.
+        // Office Open XML formats (.xlsx/.docx/.pptx) are ZIP archives internally,
+        // so PHP's finfo may return 'application/zip' or 'application/octet-stream'
+        // for the uploaded temp file. We allow all variants here; the extension
+        // check above is already the primary guard.
         $allowedMimes = [
             'pdf' => ['application/pdf'],
-            'doc' => ['application/msword', 'application/vnd.ms-word'],
-            'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-            'xls' => ['application/vnd.ms-excel', 'application/msexcel'],
-            'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-            'ppt' => ['application/vnd.ms-powerpoint'],
-            'pptx' => ['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+            'doc' => ['application/msword', 'application/vnd.ms-word', 'application/octet-stream'],
+            'docx' => [
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/zip',
+                'application/x-zip-compressed',
+                'application/octet-stream',
+            ],
+            'xls' => ['application/vnd.ms-excel', 'application/msexcel', 'application/octet-stream'],
+            'xlsx' => [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/zip',
+                'application/x-zip-compressed',
+                'application/octet-stream',
+            ],
+            'ppt' => ['application/vnd.ms-powerpoint', 'application/octet-stream'],
+            'pptx' => [
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'application/zip',
+                'application/x-zip-compressed',
+                'application/octet-stream',
+            ],
             'zip' => ['application/zip', 'application/x-zip-compressed', 'multipart/x-zip'],
             'jpg' => ['image/jpeg'],
             'png' => ['image/png'],
@@ -58,12 +77,18 @@ class FileController extends Controller
 
                 // MIME type must match the declared extension
                 if (!in_array($mime, $allowedMimes[$ext])) {
+                    \Log::warning('Upload blocked: MIME mismatch', [
+                        'file' => $uploadedFile->getClientOriginalName(),
+                        'ext' => $ext,
+                        'mime' => $mime,
+                    ]);
                     return response()->json([
                         'success' => false,
                         'message' => 'Validation failed',
                         'errors' => [
                             "files.$index" => [
-                                "The file content does not match its extension '." . $ext . "'. Upload rejected."
+                                "The file content does not match its extension '." . $ext . "'. "
+                                . "Detected: $mime. Upload rejected."
                             ],
                         ],
                     ], 422);
