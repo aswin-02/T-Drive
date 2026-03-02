@@ -78,8 +78,10 @@
                                                     data-folder-id="{{ $subFolder->id }}"
                                                     data-folder-name="{{ $subFolder->name }}"><i
                                                         class="ri-pencil-fill mr-2"></i>Rename</a>
-                                                <a class="dropdown-item" href="#"><i
-                                                        class="ri-delete-bin-6-fill mr-2"></i>Delete</a>
+                                                <a class="dropdown-item delete-folder" href="#"
+                                                    data-folder-id="{{ $subFolder->id }}">
+                                                    <i class="ri-delete-bin-6-fill mr-2"></i>Delete
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -139,7 +141,8 @@
                                                         <a class="dropdown-item rename-file" href="#" data-file-id="{{ $file->id }}"
                                                             data-file-name="{{ $file->original_name }}"><i
                                                                 class="ri-pencil-fill mr-2"></i>Rename</a>
-                                                        <a class="dropdown-item" href="#"><i
+                                                        <a class="dropdown-item delete-file" href="#"
+                                                            data-file-id="{{ $file->id }}"><i
                                                                 class="ri-delete-bin-6-fill mr-2"></i>Delete</a>
                                                         <a class="dropdown-item" href="{{ $file->download_url }}" download><i
                                                                 class="ri-download-line mr-2"></i>Download</a>
@@ -335,15 +338,15 @@
             // Add email input
             $('#addEmailBtn').on('click', function () {
                 const emailGroup = `
-                            <div class="input-group mb-2 email-input-group">
-                                <input type="email" class="form-control email-input" placeholder="Enter email address" required>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-danger remove-email" type="button">
-                                        <i class="ri-close-line"></i>
-                                    </button>
+                                <div class="input-group mb-2 email-input-group">
+                                    <input type="email" class="form-control email-input" placeholder="Enter email address" required>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-danger remove-email" type="button">
+                                            <i class="ri-close-line"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        `;
+                            `;
                 $('#emailInputs').append(emailGroup);
                 updateRemoveButtons();
             });
@@ -472,15 +475,15 @@
             // Helper function to reset email inputs
             function resetEmailInputs() {
                 $('#emailInputs').html(`
-                            <div class="input-group mb-2 email-input-group">
-                                <input type="email" class="form-control email-input" placeholder="Enter email address" required>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-danger remove-email" type="button" style="display: none;">
-                                        <i class="ri-close-line"></i>
-                                    </button>
+                                <div class="input-group mb-2 email-input-group">
+                                    <input type="email" class="form-control email-input" placeholder="Enter email address" required>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-danger remove-email" type="button" style="display: none;">
+                                            <i class="ri-close-line"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        `);
+                            `);
                 $('#shareSubmitBtn').show();
             }
 
@@ -586,6 +589,93 @@
                     }
                 });
             }
+            // ── Delete file ─────────────────────────────────────────────
+            $(document).on('click', '.delete-file', function (e) {
+                e.preventDefault();
+                const fileId = $(this).data('file-id');
+                const fileCard = $(this).closest('.col-lg-3');
+
+                Swal.fire({
+                    title: 'Move to Trash?',
+                    text: 'You can restore this file from the trash later.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, move to trash!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/files/${fileId}`,
+                            method: 'DELETE',
+                            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                            success: function (response) {
+                                if (response.success) {
+                                    fileCard.fadeOut(300, function () { $(this).remove(); });
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Moved to Trash!',
+                                        text: response.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                }
+                            },
+                            error: function (xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: xhr.responseJSON?.message || 'Error deleting file. Please try again.'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+            // ── Delete sub-folder ────────────────────────────────────────
+            $(document).on('click', '.delete-folder', function (e) {
+                e.preventDefault();
+                const folderId = $(this).data('folder-id');
+                const folderCard = $(this).closest('.col-md-6');
+
+                Swal.fire({
+                    title: 'Move to Trash?',
+                    text: 'You can restore this folder from the trash later.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, move to trash!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/folders/${folderId}`,
+                            method: 'DELETE',
+                            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                            success: function (response) {
+                                if (response.success) {
+                                    folderCard.fadeOut(300, function () { $(this).remove(); });
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Moved to Trash!',
+                                        text: response.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                }
+                            },
+                            error: function (xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: xhr.responseJSON?.message || 'Error deleting folder. Please try again.'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
         });
     </script>
 @endpush

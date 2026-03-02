@@ -15,7 +15,7 @@ class FileController extends Controller
      */
     public function upload(Request $request)
     {
-        $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png'];
+        $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png', 'mp4', 'mov', 'avi', 'mkv', 'webm'];
 
         // Expected MIME types per extension.
         // Office Open XML formats (.xlsx/.docx/.pptx) are ZIP archives internally,
@@ -48,6 +48,11 @@ class FileController extends Controller
             'zip' => ['application/zip', 'application/x-zip-compressed', 'multipart/x-zip'],
             'jpg' => ['image/jpeg'],
             'png' => ['image/png'],
+            'mp4' => ['video/mp4', 'video/mpeg', 'application/octet-stream'],
+            'mov' => ['video/quicktime', 'video/mov', 'application/octet-stream'],
+            'avi' => ['video/x-msvideo', 'video/avi', 'application/octet-stream'],
+            'mkv' => ['video/x-matroska', 'video/webm', 'application/octet-stream'],
+            'webm' => ['video/webm', 'application/octet-stream'],
         ];
 
         try {
@@ -222,6 +227,11 @@ class FileController extends Controller
             'rar' => 'archive',
             '7z' => 'archive',
             'txt' => 'text',
+            'mp4' => 'video',
+            'mov' => 'video',
+            'avi' => 'video',
+            'mkv' => 'video',
+            'webm' => 'video',
         ];
 
         return $viewerTypes[$extension] ?? 'unknown';

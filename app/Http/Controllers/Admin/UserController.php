@@ -23,7 +23,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $this->authorize('View Users');
-        if($request->ajax()){
+        if ($request->ajax()) {
             return $this->indexAPI(app(DataTables::class));
         }
         return view('admin.users.index');
@@ -33,7 +33,7 @@ class UserController extends Controller
     public function indexAPI(DataTables $datatables)
     {
         $this->authorize('View Users');
-        $query = User::where('user_type', 'admin')->where('is_show',1)->withTrashed();
+        $query = User::where('user_type', 'admin')->where('is_show', 1)->withTrashed();
         return $datatables->eloquent($query)
             ->addIndexColumn()
             ->addColumn('status', function ($user) {
@@ -45,11 +45,11 @@ class UserController extends Controller
                     return '<span class="badge bg-success">Active</span>';
                 }
             })
-            ->addColumn('role_name', function($data) {
+            ->addColumn('role_name', function ($data) {
                 $role = $data->roles->first();
                 return $role ? $role->name : '';
             })
-            ->addColumn('password1', function($data) {
+            ->addColumn('password1', function ($data) {
                 if (auth()->user()->can('Password Users') && $data->password1) {
                     return EncryptDecrypt("decrypt", $data->password1);
                 }
@@ -63,16 +63,16 @@ class UserController extends Controller
                 $button = '<div class="d-flex justify-content-center">';
                 if ($user->trashed()) {
                     if ($canRestore) {
-                        $button .= '<a href="javascript:void(0);" onclick="commonRestore(\'' . route('admin.users.restore', $user->id) . '\', \'User\')" class="btn btn-warning btn-sm m-1"><i class="fa fa-undo"></i></a>';
+                        $button .= '<a href="javascript:void(0);" onclick="commonRestore(\'' . route('admin.users.restore', $user->id) . '\', \'User\')" class="btn btn-warning btn-sm m-1" title="Restore"><i class="ri-arrow-go-back-line"></i></a>';
                     } else {
                         $button .= '-';
                     }
                 } else {
                     if ($canEdit) {
-                        $button .= '<a href="' . route('admin.users.edit', $user->id) . '" class="btn btn-warning btn-sm m-1"><i class="fa fa-pencil"></i></a>';
+                        $button .= '<a href="' . route('admin.users.edit', $user->id) . '" class="btn btn-warning btn-sm m-1" title="Edit"><i class="ri-pencil-line"></i></a>';
                     }
                     if ($canDelete) {
-                        $button .= '<a href="javascript:void(0);" onclick="commonDelete(\'' . route('admin.users.destroy', $user->id) . '\', \'User\')" class="btn btn-danger btn-sm m-1"><i class="fa fa-trash"></i></a>';
+                        $button .= '<a href="javascript:void(0);" onclick="commonDelete(\'' . route('admin.users.destroy', $user->id) . '\', \'User\')" class="btn btn-danger btn-sm m-1" title="Delete"><i class="ri-delete-bin-line"></i></a>';
                     }
                 }
                 $button .= '</div>';
@@ -89,7 +89,7 @@ class UserController extends Controller
     {
         $this->authorize('Create Users');
         $item = null;
-        $roles = Role::whereNot('id','1')->get();
+        $roles = Role::whereNot('id', '1')->get();
         return view('admin.users.data', compact('item', 'roles'));
     }
 
@@ -100,9 +100,9 @@ class UserController extends Controller
     {
         $this->authorize('Create Users');
         try {
-           DB::beginTransaction();
+            DB::beginTransaction();
             $data = $request->validated();
-            $data['password1'] = EncryptDecrypt("encrypt",$data['password']);
+            $data['password1'] = EncryptDecrypt("encrypt", $data['password']);
             $data['password'] = Hash::make($data['password']);
 
             if ($request->hasFile('image')) {
@@ -137,7 +137,7 @@ class UserController extends Controller
     {
         $this->authorize('Edit Users');
         $item = $user;
-        $roles = Role::whereNot('id','1')->get();
+        $roles = Role::whereNot('id', '1')->get();
         return view('admin.users.data', compact('item', 'roles'));
     }
 
@@ -149,8 +149,8 @@ class UserController extends Controller
         $this->authorize('Edit Users');
         $data = $request->validated();
         if (!empty($data['password'])) {
-           $data['password1'] = EncryptDecrypt("encrypt",$data['password']);
-           $data['password'] = Hash::make($data['password']);
+            $data['password1'] = EncryptDecrypt("encrypt", $data['password']);
+            $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
             unset($data['password1']);
@@ -238,19 +238,19 @@ class UserController extends Controller
         $this->authorize('Edit Users');
         try {
             DB::beginTransaction();
-            
+
             $user = User::findOrFail($id);
             $old = $user->toArray();
-            
+
             $user->update([
                 'bank_details_approved' => true,
                 'bank_details_rejection_reason' => null,
             ]);
-            
+
             Logger::log('update', $user, $old, $user->toArray());
-            
+
             DB::commit();
-            
+
             return response()->json(['success' => true, 'message' => 'Bank details approved successfully.']);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -265,26 +265,26 @@ class UserController extends Controller
     public function rejectBankDetails(Request $request, $id)
     {
         $this->authorize('Edit Users');
-        
+
         $request->validate([
             'rejection_reason' => 'required|string|max:500',
         ]);
-        
+
         try {
             DB::beginTransaction();
-            
+
             $user = User::findOrFail($id);
             $old = $user->toArray();
-            
+
             $user->update([
                 'bank_details_approved' => false,
                 'bank_details_rejection_reason' => $request->rejection_reason,
             ]);
-            
+
             Logger::log('update', $user, $old, $user->toArray());
-            
+
             DB::commit();
-            
+
             return response()->json(['success' => true, 'message' => 'Bank details rejected.']);
         } catch (\Exception $e) {
             DB::rollBack();

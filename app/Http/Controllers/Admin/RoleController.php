@@ -21,7 +21,7 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $this->authorize('View Roles');
-        if($request->ajax()){
+        if ($request->ajax()) {
             return $this->indexAPI(app(DataTables::class));
         }
         return view('admin.roles.index');
@@ -49,16 +49,16 @@ class RoleController extends Controller
                 $button = '<div class="d-flex justify-content-center">';
                 if ($role->trashed()) {
                     if ($canRestore) {
-                        $button .= '<a href="javascript:void(0);" onclick="commonRestore(\'' . route('admin.roles.restore', $role->id) . '\', \'Role\')" class="btn btn-warning btn-sm m-1"><i class="fa fa-undo"></i></a>';
+                        $button .= '<a href="javascript:void(0);" onclick="commonRestore(\'' . route('admin.roles.restore', $role->id) . '\', \'Role\')" class="btn btn-warning btn-sm m-1" title="Restore"><i class="ri-arrow-go-back-line"></i></a>';
                     } else {
                         $button .= '-';
                     }
                 } else {
                     if ($canEdit) {
-                        $button .= '<a href="' . route('admin.roles.edit', $role->id) . '" class="btn btn-warning btn-sm m-1"><i class="fa fa-pencil"></i></a>';
+                        $button .= '<a href="' . route('admin.roles.edit', $role->id) . '" class="btn btn-warning btn-sm m-1" title="Edit"><i class="ri-pencil-line"></i></a>';
                     }
                     if ($canDelete) {
-                        $button .= '<a href="javascript:void(0);" onclick="commonDelete(\'' . route('admin.roles.destroy', $role->id) . '\', \'Role\')" class="btn btn-danger btn-sm m-1"><i class="fa fa-trash"></i></a>';
+                        $button .= '<a href="javascript:void(0);" onclick="commonDelete(\'' . route('admin.roles.destroy', $role->id) . '\', \'Role\')" class="btn btn-danger btn-sm m-1" title="Delete"><i class="ri-delete-bin-line"></i></a>';
                     }
                 }
                 $button .= '</div>';
@@ -183,7 +183,7 @@ class RoleController extends Controller
             return response()->json(['success' => false, 'message' => $errorMsg]);
         }
     }
-    
+
     /**
      * Restore a soft-deleted role.
      */

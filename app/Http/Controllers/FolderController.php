@@ -264,6 +264,11 @@ class FolderController extends Controller
             return asset('images/layouts/page-1/zip.png');
         }
 
+        // Video files
+        if (strpos($mimeType, 'video/') === 0) {
+            return asset('images/layouts/page-1/video.png');
+        }
+
         // Default icon for unknown types
         return asset('images/layouts/page-1/file.png');
     }
