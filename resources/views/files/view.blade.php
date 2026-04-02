@@ -244,6 +244,53 @@
                                 </div>
 
                                 {{-- ════════════════════════════════════
+                                AUDIO → Native HTML5 <audio> player
+                                    ════════════════════════════════════ --}}
+                        @elseif($viewerType === 'audio')
+                                <div class="d-flex justify-content-center align-items-center p-5">
+                                    <div class="card shadow-sm" style="max-width:600px; width:100%; border-radius:16px; overflow:hidden;">
+                                        <div class="card-body text-center p-4" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);">
+                                            <div class="mb-4">
+                                                <div class="audio-icon-wrap d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                                                     style="width:90px; height:90px; background:rgba(255,255,255,0.1); animation: audioPulse 2s ease-in-out infinite;">
+                                                    <i class="ri-music-2-fill" style="font-size:44px; color:#7c83fd;"></i>
+                                                </div>
+                                                <h5 class="text-white mb-1 text-truncate" title="{{ $file->original_name }}">
+                                                    {{ pathinfo($file->original_name, PATHINFO_FILENAME) }}
+                                                </h5>
+                                                <small class="text-muted" style="color: rgba(255,255,255,0.5) !important;">
+                                                    {{ strtoupper($extension) }} &nbsp;·&nbsp; {{ $file->formatted_size }}
+                                                </small>
+                                            </div>
+                                            <audio controls id="audioPlayer"
+                                                style="width:100%; border-radius:30px; outline:none;"
+                                                preload="metadata"
+                                                onerror="document.getElementById('audio-error').style.display='block'; this.style.display='none';">
+                                                <source src="{{ url($fileUrl) }}" type="{{ $file->mime_type }}">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                            <div id="audio-error" style="display:none;" class="alert alert-danger mt-3">
+                                                <i class="ri-alarm-warning-fill mr-2"></i>Failed to load audio.
+                                                <a href="{{ route('files.download', $file->id) }}" class="alert-link">Download</a> to listen.
+                                            </div>
+                                        </div>
+                                        <div class="card-footer text-center py-3" style="background:#0d1117; border-top:1px solid rgba(255,255,255,0.08);">
+                                            <a href="{{ route('files.download', $file->id) }}" class="btn btn-sm btn-outline-light">
+                                                <i class="ri-download-line mr-1"></i>Download Audio
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                @push('styles')
+                                <style>
+                                    @keyframes audioPulse {
+                                        0%, 100% { transform: scale(1);   box-shadow: 0 0 0   0 rgba(124,131,253,.4); }
+                                        50%       { transform: scale(1.07); box-shadow: 0 0 0 18px rgba(124,131,253,0); }
+                                    }
+                                </style>
+                                @endpush
+
+                                {{-- ════════════════════════════════════
                                 TEXT
                                 ════════════════════════════════════ --}}
                             @elseif($viewerType === 'text')

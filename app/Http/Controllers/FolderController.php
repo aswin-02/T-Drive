@@ -269,6 +269,11 @@ class FolderController extends Controller
             return asset('images/layouts/page-1/video.png');
         }
 
+        // Audio files
+        if (strpos($mimeType, 'audio/') === 0) {
+            return asset('images/layouts/page-1/audio.png');
+        }
+
         // Default icon for unknown types
         return asset('images/layouts/page-1/file.png');
     }

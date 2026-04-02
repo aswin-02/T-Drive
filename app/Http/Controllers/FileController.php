@@ -15,7 +15,7 @@ class FileController extends Controller
      */
     public function upload(Request $request)
     {
-        $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png', 'mp4', 'mov', 'avi', 'mkv', 'webm'];
+        $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'jpg', 'png', 'mp4', 'mov', 'avi', 'mkv', 'webm', 'mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'];
 
         // Expected MIME types per extension.
         // Office Open XML formats (.xlsx/.docx/.pptx) are ZIP archives internally,
@@ -53,6 +53,12 @@ class FileController extends Controller
             'avi' => ['video/x-msvideo', 'video/avi', 'application/octet-stream'],
             'mkv' => ['video/x-matroska', 'video/webm', 'application/octet-stream'],
             'webm' => ['video/webm', 'application/octet-stream'],
+            'mp3'  => ['audio/mpeg', 'audio/mp3', 'application/octet-stream'],
+            'wav'  => ['audio/wav', 'audio/x-wav', 'audio/wave', 'application/octet-stream'],
+            'ogg'  => ['audio/ogg', 'application/ogg', 'application/octet-stream'],
+            'flac' => ['audio/flac', 'audio/x-flac', 'application/octet-stream'],
+            'aac'  => ['audio/aac', 'audio/x-aac', 'application/octet-stream'],
+            'm4a'  => ['audio/mp4', 'audio/x-m4a', 'audio/m4a', 'application/octet-stream'],
         ];
 
         try {
@@ -227,11 +233,17 @@ class FileController extends Controller
             'rar' => 'archive',
             '7z' => 'archive',
             'txt' => 'text',
-            'mp4' => 'video',
-            'mov' => 'video',
-            'avi' => 'video',
-            'mkv' => 'video',
+            'mp4'  => 'video',
+            'mov'  => 'video',
+            'avi'  => 'video',
+            'mkv'  => 'video',
             'webm' => 'video',
+            'mp3'  => 'audio',
+            'wav'  => 'audio',
+            'ogg'  => 'audio',
+            'flac' => 'audio',
+            'aac'  => 'audio',
+            'm4a'  => 'audio',
         ];
 
         return $viewerTypes[$extension] ?? 'unknown';

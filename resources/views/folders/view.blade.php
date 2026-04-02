@@ -393,14 +393,26 @@
                     });
 
                     if (!isValid) {
-                        alert('Please fill in all email addresses');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Please fill in all email addresses',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                         return;
                     }
 
                     // Check for duplicates
                     const uniqueEmails = [...new Set(emails)];
                     if (uniqueEmails.length !== emails.length) {
-                        alert('Please remove duplicate email addresses');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Please remove duplicate email addresses',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                         return;
                     }
                     emails = uniqueEmails;
@@ -432,16 +444,34 @@
                             $('#shareSubmitBtn').hide();
 
                             // Show success message
-                            alert('Share link created successfully!');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Share link created successfully!',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
                         } else {
                             // Close modal and show success
                             $('#shareModal').modal('hide');
-                            alert('File shared successfully!');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'File shared successfully!',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
                         }
                     },
                     error: function (xhr) {
                         const message = xhr.responseJSON?.message || 'Error sharing file. Please try again.';
-                        alert(message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                     }
                 });
             });

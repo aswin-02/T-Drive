@@ -435,7 +435,7 @@
                 const formData = new FormData();
 
                 // Strict whitelist — must match server validation exactly
-                const allowedExts = ['pdf','doc','docx','xls','xlsx','ppt','pptx','zip','jpg','png','mp4','mov','avi','mkv','webm'];
+                const allowedExts = ['pdf','doc','docx','xls','xlsx','ppt','pptx','zip','jpg','png','mp4','mov','avi','mkv','webm','mp3','wav','ogg','flac','aac','m4a'];
                 const maxSize = 100 * 1024 * 1024; // 100 MB
                 let validFiles  = [];
                 let invalidFiles = [];
@@ -445,7 +445,7 @@
                     const ext  = file.name.split('.').pop().toLowerCase();
 
                     if (!allowedExts.includes(ext)) {
-                        invalidFiles.push(file.name + ' (type not allowed — must be PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, JPG, PNG, MP4, MOV, AVI, MKV or WEBM)');
+                        invalidFiles.push(file.name + ' (type not allowed — must be PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, JPG, PNG, MP4, MOV, AVI, MKV, WEBM, MP3, WAV, OGG, FLAC, AAC or M4A)');
                     } else if (file.size > maxSize) {
                         invalidFiles.push(file.name + ' (file too large, max 100 MB)');
                     } else {
