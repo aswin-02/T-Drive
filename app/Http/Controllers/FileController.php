@@ -65,7 +65,7 @@ class FileController extends Controller
             // Basic validation
             $request->validate([
                 'files' => 'required|array',
-                'files.*' => 'required|file|max:102400', // max 100 MB
+                'files.*' => 'required|file|max:204800', // max 200 MB
             ]);
 
             // Strict extension + MIME check on every file
